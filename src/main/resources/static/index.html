@@ -5,6 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>TrackIt — Application Intelligence</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class'
+    }
+  </script>
+  <script>
+    // Inline script to prevent FOUC
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
@@ -196,9 +209,183 @@
       100% { opacity: 0; }
     }
     .backdrop-fade-out { animation: backdropFadeOut 0.35s ease forwards; }
+
+    /* Transition for smooth Theme Switch */
+    body, .app-card, .nav-container, .field-input, .bg-white, .btn-black, .badge, .fixed {
+      transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, transform 0.2s ease, opacity 0.3s ease !important;
+    }
+
+    /* Dark Mode Theme Overrides */
+    .dark body {
+      background-color: #0c0c0e !important;
+      color: #f3f4f6 !important;
+    }
+    .dark .bg-white {
+      background-color: #121214 !important;
+    }
+    .dark .app-card {
+      background-color: #121214 !important;
+      border-color: #222225 !important;
+    }
+    .dark .bg-slate-100 {
+      background-color: #27272a !important;
+    }
+    .dark .border-slate-100, 
+    .dark .border-slate-200, 
+    .dark .border-neutral-100, 
+    .dark .border-neutral-200 {
+      border-color: #27272a !important;
+    }
+    .dark .text-slate-400 {
+      color: #a1a1aa !important;
+    }
+    .dark .text-slate-300 {
+      color: #71717a !important;
+    }
+    .dark .text-slate-200 {
+      color: #52525b !important;
+    }
+    .dark .bg-slate-50\/30 {
+      background-color: #0c0c0e !important;
+    }
+    .dark .bg-neutral-50 {
+      background-color: #1a1a1e !important;
+    }
+    .dark .bg-slate-50\/50 {
+      background-color: #18181b !important;
+    }
+    .dark .border-slate-100\/50 {
+      border-color: rgba(39, 39, 42, 0.5) !important;
+    }
+    .dark .text-slate-600 {
+      color: #d4d4d8 !important;
+    }
+    .dark .text-slate-500 {
+      color: #a1a1aa !important;
+    }
+    .dark .field-input {
+      background: #18181b !important;
+      border-color: #27272a !important;
+      color: #ffffff !important;
+    }
+    .dark .field-input:focus {
+      border-color: #ffffff !important;
+      box-shadow: 0 0 0 2px rgba(255,255,255,0.08) !important;
+    }
+    .dark .btn-black {
+      background: #ffffff !important;
+      color: #000000 !important;
+    }
+    .dark .shadow-lg.shadow-black\/10 {
+      box-shadow: none !important;
+    }
+    .dark #static-add-btn.btn-black {
+      background: #ffffff !important;
+      color: #000000 !important;
+    }
+    .dark #floating-add-btn {
+      background: #ffffff !important;
+      color: #000000 !important;
+    }
+    .dark .badge-applied {
+      background: #27272a !important;
+      color: #ffffff !important;
+    }
+    .dark .nav-container {
+      border-color: #ffffff !important;
+      background-color: #0c0c0e !important;
+    }
+    .dark #nav-cursor {
+      background-color: #ffffff !important;
+    }
+    .dark .text-rose-500 {
+      color: #f43f5e !important;
+    }
+    .dark .text-rose-600 {
+      color: #fb7185 !important;
+    }
+    .dark .text-emerald-600 {
+      color: #34d399 !important;
+    }
+    .dark .text-emerald-500 {
+      color: #34d399 !important;
+    }
+    .dark .badge-interview {
+      background: #2d2204 !important;
+      color: #fbbf24 !important;
+      border-color: #78350f !important;
+    }
+    .dark .badge-offer {
+      background: #022c22 !important;
+      color: #34d399 !important;
+      border-color: #065f46 !important;
+    }
+    .dark .badge-rejected {
+      background: #450a0a !important;
+      color: #f87171 !important;
+      border-color: #991b1b !important;
+    }
+    .dark .app-card:hover {
+      border-color: #ffffff !important;
+      box-shadow: 0 10px 30px rgba(255,255,255,0.015) !important;
+    }
+    .dark .hover\:text-black:hover {
+      color: #ffffff !important;
+    }
+    .dark .hover\:border-black:hover {
+      border-color: #ffffff !important;
+    }
+    .dark svg {
+      stroke: currentColor;
+    }
+    .dark #trash-lid line, .dark #trash-lid path, .dark #trash-body path, .dark #trash-body line {
+      stroke: #ffffff;
+    }
+    .dark #status-pick > div {
+      background-color: #121214 !important;
+      border: 1px solid #27272a;
+    }
+    .dark #status-pick button:hover {
+      background-color: #ffffff !important;
+      color: #000000 !important;
+    }
+    .dark #delete-confirm > div {
+      background-color: #121214 !important;
+      border: 1px solid #27272a;
+    }
+    .dark #delete-confirm-detail {
+      background-color: #1a1a1e !important;
+      border-color: #27272a !important;
+      color: #a1a1aa !important;
+    }
+    .dark #btn-confirm-delete {
+      background: #ffffff !important;
+      color: #000000 !important;
+    }
+    .dark #btn-confirm-delete:hover {
+      background: #f43f5e !important;
+      color: #ffffff !important;
+    }
+    .dark #overlay > div {
+      background-color: #121214 !important;
+      border: 1px solid #27272a;
+    }
   </style>
 </head>
 <body class="min-h-screen bg-slate-50/30">
+  <!-- Theme Toggle Button -->
+  <button id="theme-toggle" onclick="toggleTheme()" class="fixed top-6 right-6 z-[95] bg-white border border-slate-200 text-slate-700 dark:bg-zinc-900 dark:border-zinc-800 dark:text-zinc-300 w-12 h-12 rounded-full flex items-center justify-center shadow-lg hover:scale-110 active:scale-95 transition-all duration-300">
+    <!-- Sun Icon (visible in dark mode) -->
+    <svg id="sun-icon" class="hidden w-5 h-5 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="4"/>
+      <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
+    </svg>
+    <!-- Moon Icon (visible in light mode) -->
+    <svg id="moon-icon" class="w-5 h-5 text-slate-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
+    </svg>
+  </button>
+
   <div class="max-w-5xl mx-auto px-6 py-12 md:py-20">
     <!-- Header -->
     <header class="flex flex-col items-center mb-16 text-center">
@@ -787,6 +974,39 @@
     loadStats();
     loadList();
     initFAB();
+
+    function initTheme() {
+      const isDark = localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      const sunIcon = document.getElementById('sun-icon');
+      const moonIcon = document.getElementById('moon-icon');
+      if (isDark) {
+        document.documentElement.classList.add('dark');
+        if (sunIcon) sunIcon.classList.remove('hidden');
+        if (moonIcon) moonIcon.classList.add('hidden');
+      } else {
+        document.documentElement.classList.remove('dark');
+        if (sunIcon) sunIcon.classList.add('hidden');
+        if (moonIcon) moonIcon.classList.remove('hidden');
+      }
+    }
+
+    function toggleTheme() {
+      const isDark = document.documentElement.classList.toggle('dark');
+      const sunIcon = document.getElementById('sun-icon');
+      const moonIcon = document.getElementById('moon-icon');
+      if (isDark) {
+        localStorage.theme = 'dark';
+        if (sunIcon) sunIcon.classList.remove('hidden');
+        if (moonIcon) moonIcon.classList.add('hidden');
+        showToast('Dark mode activated', 'success');
+      } else {
+        localStorage.theme = 'light';
+        if (sunIcon) sunIcon.classList.add('hidden');
+        if (moonIcon) moonIcon.classList.remove('hidden');
+        showToast('Light mode activated', 'success');
+      }
+    }
+    initTheme();
   </script>
 </body>
 </html>
