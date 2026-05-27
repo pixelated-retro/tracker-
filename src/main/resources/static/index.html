@@ -311,6 +311,22 @@
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
   </button>
 
+  <!-- Delete Confirmation Modal -->
+  <div id="delete-confirm" onclick="closeDeleteConfirm(event)" class="hidden fixed inset-0 z-[60] bg-black/60 backdrop-blur-md items-center justify-center p-6">
+    <div class="bg-white p-8 rounded-3xl max-w-sm w-full shadow-2xl text-center">
+      <div class="w-14 h-14 mx-auto mb-6 rounded-full bg-rose-50 border border-rose-100 flex items-center justify-center">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#e11d48" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+      </div>
+      <h3 class="text-lg font-black tracking-tight mb-2">DELETE RECORD</h3>
+      <p class="text-sm text-slate-400 mb-1">This action cannot be undone.</p>
+      <p id="delete-confirm-detail" class="text-xs mono text-slate-300 uppercase tracking-wider mb-8"></p>
+      <div class="flex gap-3">
+        <button onclick="cancelDelete()" class="flex-1 py-3 rounded-2xl border border-slate-200 text-slate-500 hover:border-black hover:text-black transition-all font-bold uppercase tracking-widest text-xs">Cancel</button>
+        <button id="btn-confirm-delete" onclick="confirmDelete()" class="flex-1 py-3 rounded-2xl bg-rose-600 text-white hover:bg-rose-700 transition-all font-bold uppercase tracking-widest text-xs">Delete</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     const API = window.location.origin + '/api/applications';
     let activeStatusFilter = 'all';
@@ -557,14 +573,50 @@
       }
     }
 
-    async function deleteApp(id) {
-      if (!confirm('Permanently remove this record?')) return;
+    let deleteTargetId = null;
+
+    function deleteApp(id) {
+      deleteTargetId = id;
+      // Try to show role & company from the rendered card
+      const card = document.querySelector(`[onclick="deleteApp(${id})"]`);
+      let detail = '';
+      if (card) {
+        const row = card.closest('.app-card');
+        if (row) {
+          const role = row.querySelector('h3');
+          const company = row.querySelector('p');
+          if (role && company) detail = `${role.textContent.trim()} @ ${company.textContent.trim()}`;
+        }
+      }
+      document.getElementById('delete-confirm-detail').textContent = detail;
+      document.getElementById('delete-confirm').classList.replace('hidden', 'flex');
+    }
+
+    function cancelDelete() {
+      deleteTargetId = null;
+      document.getElementById('delete-confirm').classList.replace('flex', 'hidden');
+    }
+
+    function closeDeleteConfirm(e) {
+      if (e.target === document.getElementById('delete-confirm')) cancelDelete();
+    }
+
+    async function confirmDelete() {
+      if (!deleteTargetId) return;
+      const btn = document.getElementById('btn-confirm-delete');
+      btn.disabled = true;
+      btn.textContent = 'Deleting...';
       try {
-        await apiFetch(`${API}/${id}`, { method: 'DELETE' });
+        await apiFetch(`${API}/${deleteTargetId}`, { method: 'DELETE' });
         showToast('Record removed', 'success');
         loadList();
         loadStats();
       } catch (e) { showToast('Delete failed', 'error'); }
+      finally {
+        btn.disabled = false;
+        btn.textContent = 'Delete';
+        cancelDelete();
+      }
     }
 
     function openStatusPick(id) {
