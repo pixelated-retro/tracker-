@@ -196,6 +196,14 @@
       100% { opacity: 0; }
     }
     .backdrop-fade-out { animation: backdropFadeOut 0.35s ease forwards; }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .animate-spin-custom {
+      animation: spin 1s linear infinite;
+    }
   </style>
 </head>
 <body class="min-h-screen bg-slate-50/30">
@@ -205,6 +213,15 @@
       <div class="mb-10">
         <h1 class="text-4xl md:text-5xl font-extrabold tracking-tighter mb-2">TRACKIT</h1>
         <p class="text-slate-400 font-medium uppercase tracking-widest text-xs">Professional Intelligence System</p>
+      </div>
+      
+      <!-- Gmail Connection Status Widget -->
+      <div id="gmail-widget" class="mt-2 inline-flex items-center gap-2.5 px-4 py-2 bg-white/80 border border-slate-100 rounded-full shadow-sm text-xs mono transition-all">
+        <span class="relative flex h-2 w-2">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-slate-300 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-slate-400"></span>
+        </span>
+        <span class="text-slate-400 uppercase tracking-widest text-[9px] font-bold">Checking Gmail Connection...</span>
       </div>
       
       <!-- Combined Filters -->
@@ -261,10 +278,16 @@
         <input id="search" type="text" placeholder="Search by role, company..." oninput="onSearch()" 
                class="w-full bg-white border border-slate-200 rounded-full px-6 py-3 text-sm outline-none focus:border-black transition-all shadow-sm">
       </div>
-      <button id="static-add-btn" onclick="openModal()" class="btn-black flex items-center gap-2 shadow-lg shadow-black/10">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        New Application
-      </button>
+      <div class="flex items-center gap-3 w-full md:w-auto justify-end">
+        <button id="gmail-sync-btn" onclick="triggerGmailSync()" class="hidden border border-slate-200 hover:border-black bg-white text-black px-5 py-3 rounded-full font-semibold transition-all text-sm flex items-center gap-2 shadow-sm">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="gmail-sync-icon"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          Sync Gmail
+        </button>
+        <button id="static-add-btn" onclick="openModal()" class="btn-black flex items-center gap-2 shadow-lg shadow-black/10 whitespace-nowrap">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          New Application
+        </button>
+      </div>
     </div>
 
     <!-- Error Banner -->
@@ -784,8 +807,93 @@
       observer.observe(staticBtn);
     }
 
+    const AUTH_API = window.location.origin + '/api/auth/google';
+
+    async function checkGmailStatus() {
+      const widget = document.getElementById('gmail-widget');
+      const syncBtn = document.getElementById('gmail-sync-btn');
+      try {
+        const res = await fetch(`${AUTH_API}/status`);
+        if (!res.ok) throw new Error('Status check failed');
+        const data = await res.json();
+        if (data.connected) {
+          widget.className = "mt-2 inline-flex items-center gap-2.5 px-4 py-2 bg-emerald-50/60 border border-emerald-100 rounded-full shadow-sm text-xs mono transition-all";
+          widget.innerHTML = `
+            <span class="relative flex h-2 w-2">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            <span class="text-emerald-700 font-bold uppercase tracking-widest text-[9px]">Gmail Connected</span>
+            <button onclick="disconnectGmail()" class="text-slate-400 hover:text-rose-500 transition-colors ml-1.5 font-bold uppercase tracking-widest text-[9px]">Disconnect</button>
+          `;
+          if (syncBtn) syncBtn.classList.remove('hidden');
+        } else {
+          widget.className = "mt-2 inline-flex items-center gap-2.5 px-4 py-2 bg-slate-50 border border-slate-200/60 rounded-full shadow-sm text-xs mono transition-all";
+          widget.innerHTML = `
+            <span class="relative flex h-2 w-2">
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-slate-300"></span>
+            </span>
+            <span class="text-slate-500 font-bold uppercase tracking-widest text-[9px]">Gmail Offline</span>
+            <a href="${AUTH_API}/login" class="text-black hover:underline transition-all ml-1.5 font-bold uppercase tracking-widest text-[9px]">Connect</a>
+          `;
+          if (syncBtn) syncBtn.classList.add('hidden');
+        }
+      } catch (e) {
+        widget.className = "mt-2 inline-flex items-center gap-2.5 px-4 py-2 bg-rose-50 border border-rose-100 rounded-full shadow-sm text-xs mono transition-all";
+        widget.innerHTML = `
+          <span class="relative flex h-2 w-2">
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-rose-400"></span>
+          </span>
+          <span class="text-rose-600 font-bold uppercase tracking-widest text-[9px]">API Offline</span>
+        `;
+        if (syncBtn) syncBtn.classList.add('hidden');
+      }
+    }
+
+    async function disconnectGmail() {
+      if (!confirm('Are you sure you want to disconnect your Gmail integration?')) return;
+      try {
+        const res = await fetch(`${AUTH_API}/disconnect`, { method: 'POST' });
+        if (res.ok) {
+          showToast('Gmail Disconnected', 'success');
+          checkGmailStatus();
+        } else {
+          showToast('Failed to disconnect', 'error');
+        }
+      } catch (e) {
+        showToast('Disconnect error', 'error');
+      }
+    }
+
+    async function triggerGmailSync() {
+      const btn = document.getElementById('gmail-sync-btn');
+      const icon = btn.querySelector('.gmail-sync-icon');
+      btn.disabled = true;
+      btn.classList.add('opacity-50', 'cursor-not-allowed');
+      if (icon) icon.classList.add('animate-spin-custom');
+
+      try {
+        const res = await fetch(`${API}/gmail-sync`, { method: 'POST' });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({ message: 'Sync failed' }));
+          throw new Error(err.message || 'Sync failed');
+        }
+        const data = await res.json();
+        showToast(data.message || `${data.count} applications synchronized`, 'success');
+        loadList();
+        loadStats();
+      } catch (e) {
+        showToast(e.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.classList.remove('opacity-50', 'cursor-not-allowed');
+        if (icon) icon.classList.remove('animate-spin-custom');
+      }
+    }
+
     loadStats();
     loadList();
+    checkGmailStatus();
     initFAB();
   </script>
 </body>

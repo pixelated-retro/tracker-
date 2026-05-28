@@ -1,0 +1,26 @@
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!default.properties
+
+### MSTest Template
+*.trx
+*.md.user
+
+### IDEs and Editors
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+.vscode/
+*.suo
+*.ntvsca
+*.njsproj
+*.sln
+*.sw?
+
+### Security overrides & Gmail credentials
+.env
+src/main/resources/application-local.properties
+.credentials/
+tokens.bin

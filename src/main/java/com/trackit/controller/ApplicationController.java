@@ -12,9 +12,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import com.trackit.service.GmailSyncService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -24,10 +26,12 @@ import java.util.Map;
 public class ApplicationController {
 
     private final ApplicationService service;
+    private final GmailSyncService gmailSyncService;
 
     @Autowired
-    public ApplicationController(ApplicationService service) {
+    public ApplicationController(ApplicationService service, GmailSyncService gmailSyncService) {
         this.service = service;
+        this.gmailSyncService = gmailSyncService;
     }
 
     // ---- GET all (with filters) ----
@@ -137,5 +141,20 @@ public class ApplicationController {
     )
     public ResponseEntity<StatsResponse> getStats() {
         return ResponseEntity.ok(service.getStats());
+    }
+
+    // ---- POST gmail-sync ----
+
+    @PostMapping("/gmail-sync")
+    @Operation(
+        summary = "Trigger Gmail API internship synchronization",
+        description = "Connects to the authorized user's Gmail inbox and imports matches"
+    )
+    public ResponseEntity<Map<String, Object>> syncGmail() throws java.io.IOException {
+        int count = gmailSyncService.syncApplications();
+        Map<String, Object> response = new HashMap<>();
+        response.put("count", count);
+        response.put("message", count + " applications synchronized successfully.");
+        return ResponseEntity.ok(response);
     }
 }
